@@ -16,13 +16,13 @@ func main() {
 	desktop := newDesktop()
 	mygo.App.WhenReady(func() {
 		desktop.window = mygo.NewWindow(mygo.WindowOptions{
-			Title: "RenameLite", Width: contentWidth, Height: contentHeight,
+			Title: "BadRename", Width: contentWidth, Height: contentHeight,
 			UseContentSize: true, DisableResize: true,
 			Content: ui.View(desktop.view),
 		})
 		desktop.post = desktop.window.Update
 		desktop.openFiles = func() ([]string, error) {
-			return mygo.Dialog.Open(mygo.OpenDialogOptions{Parent: desktop.window, Title: "RenameLite - Select Files", Multiple: true})
+			return mygo.Dialog.Open(mygo.OpenDialogOptions{Parent: desktop.window, Title: "BadRename - Select Files", Multiple: true})
 		}
 		desktop.window.OnClose(func(event *mygo.CloseEvent) {
 			if desktop.busy {

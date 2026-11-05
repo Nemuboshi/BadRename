@@ -1,4 +1,4 @@
-module renamelite
+module badrename
 
 go 1.27.1
 

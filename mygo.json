@@ -1,6 +1,6 @@
 {
-  "name": "RenameLite",
-  "identifier": "com.renamelite.app",
+  "name": "BadRename",
+  "identifier": "com.badrename.app",
   "icon": "build/appicon.png",
   "out": "dist"
 }

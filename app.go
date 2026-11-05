@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"slices"
 
-	"renamelite/internal/rename"
+	"badrename/internal/rename"
 )
 
 // FileRow is one entry of the file list.

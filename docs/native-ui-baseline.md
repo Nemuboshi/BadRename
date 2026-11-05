@@ -1,4 +1,4 @@
-# RenameLite 界面设计基准
+# BadRename 界面设计基准
 
 ![Whole 页与空列表设计参考](design-original-empty.png)
 
@@ -8,7 +8,7 @@
 
 ## 窗口与视觉
 
-- 标题 RenameLite；系统标题栏、固定大小、不可手动缩放。内容区为 890 × 479 DIP；实际像素尺寸随显示缩放变化。
+- 标题 BadRename；系统标题栏、固定大小、不可手动缩放。内容区为 890 × 479 DIP；实际像素尺寸随显示缩放变化。
 - 主区两列：左侧规则约 340 逻辑像素，右侧文件区约 520，间距 10，外围上/左/右各约 10；两侧白色圆角细灰边框的主体顶部与底部对齐。整体浅灰背景，深色文字，13px Segoe UI 或系统字体。
 - 左上四标签 Whole、Replace、Add/Delete、Regex；当前标签白底加粗，与内容面板连接。页面共享同一高度，切换时窗口和底部按钮不跳动。
 - 右上 File list 标题；面板内为列表和右侧纵向移动按钮，下方居中 Add、Remove、Remove All。窗口底部居中 Start Rename、Cancel、Help。

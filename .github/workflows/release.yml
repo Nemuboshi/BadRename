@@ -19,19 +19,19 @@ jobs:
             label: windows-amd64
             goos: windows
             goarch: amd64
-            artifact: renamelite-windows-amd64.exe
+            artifact: badrename-windows-amd64.exe
             extra_ldflags: -H=windowsgui
           - os: ubuntu-latest
             label: linux-amd64
             goos: linux
             goarch: amd64
-            artifact: renamelite-linux-amd64
+            artifact: badrename-linux-amd64
             extra_ldflags: ""
           - os: macos-latest
             label: darwin-arm64
             goos: darwin
             goarch: arm64
-            artifact: renamelite-darwin-arm64
+            artifact: badrename-darwin-arm64
             extra_ldflags: ""
     steps:
       - uses: actions/checkout@v4
@@ -50,11 +50,11 @@ jobs:
         run: |
           mkdir -p dist
           CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -tags mygo_noinspector \
-            -ldflags "-s -w ${{ matrix.extra_ldflags }} -X github.com/egoist/mygo.production=1 -X github.com/egoist/mygo.packageName=RenameLite -X github.com/egoist/mygo.packageVersion=0.1.0 -X github.com/egoist/mygo.packageIdentifier=com.renamelite.app" \
+            -ldflags "-s -w ${{ matrix.extra_ldflags }} -X github.com/egoist/mygo.production=1 -X github.com/egoist/mygo.packageName=BadRename -X github.com/egoist/mygo.packageVersion=0.1.0 -X github.com/egoist/mygo.packageIdentifier=com.badrename.app" \
             -o dist/${{ matrix.artifact }} .
       - uses: actions/upload-artifact@v4
         with:
-          name: renamelite-${{ matrix.label }}
+          name: badrename-${{ matrix.label }}
           path: dist/${{ matrix.artifact }}
           if-no-files-found: error
 
@@ -67,5 +67,5 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          files: renamelite-*
+          files: badrename-*
           generate_release_notes: true

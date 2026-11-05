@@ -1,4 +1,4 @@
-# RenameLite
+# BadRename
 
 A small batch rename tool. Add files, pick a rule, see every new name
 before anything touches the disk. Built with Go and MyGo native UI.
@@ -35,7 +35,7 @@ does not require Node.js or a webview.
 ```powershell
 go test ./...
 go tool mygo vet .
-go build -trimpath -tags mygo_noinspector -ldflags="-s -w -H=windowsgui -X github.com/egoist/mygo.production=1 -X github.com/egoist/mygo.packageName=RenameLite -X github.com/egoist/mygo.packageVersion=0.1.0 -X github.com/egoist/mygo.packageIdentifier=com.renamelite.app" -o dist/windows-amd64/RenameLite.exe .
+go build -trimpath -tags mygo_noinspector -ldflags="-s -w -H=windowsgui -X github.com/egoist/mygo.production=1 -X github.com/egoist/mygo.packageName=BadRename -X github.com/egoist/mygo.packageVersion=0.1.0 -X github.com/egoist/mygo.packageIdentifier=com.badrename.app" -o dist/windows-amd64/BadRename.exe .
 ```
 
 The Windows build produces one standalone executable; no installer is needed.
@@ -47,10 +47,10 @@ appropriate signature and notarization.
 
 Windows icon and DPI manifest resources are checked in as
 `rsrc_windows_amd64.syso`. After changing the icon or
-`build/windows/renamelite.exe.manifest`, regenerate them with:
+`build/windows/badrename.exe.manifest`, regenerate them with:
 
 ```sh
-go run github.com/akavel/rsrc@v0.10.2 -arch amd64 -ico build/windows/icon.ico -manifest build/windows/renamelite.exe.manifest -o rsrc_windows_amd64.syso
+go run github.com/akavel/rsrc@v0.10.2 -arch amd64 -ico build/windows/icon.ico -manifest build/windows/badrename.exe.manifest -o rsrc_windows_amd64.syso
 ```
 
 ## License
