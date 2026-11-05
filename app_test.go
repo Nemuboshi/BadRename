@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -259,21 +258,6 @@ func TestLetterUpperThroughUI(t *testing.T) {
 	}
 }
 
-func TestWebviewDataPathUnderTemp(t *testing.T) {
-	// The folder must live in the OS temp directory, never in AppData:
-	// the WebView2 cache does not need to survive a run.
-	p := webviewDataPath()
-	if !filepath.IsAbs(p) {
-		t.Errorf("path %q is not absolute", p)
-	}
-	if filepath.Dir(p) != filepath.Clean(os.TempDir()) {
-		t.Errorf("path %q is not directly in %q", p, os.TempDir())
-	}
-	if filepath.Base(p) != "RenameLite.WebView2" {
-		t.Errorf("folder name: %q", filepath.Base(p))
-	}
-}
-
 func TestAddPathsSkipsDirsAndDupes(t *testing.T) {
 	app, dir := newTempApp(t, "a.txt")
 	dirEntry := t.TempDir()
@@ -434,15 +418,6 @@ func TestStartRenameWithBrokenRule(t *testing.T) {
 	}
 	if names := listDir(t, dir); len(names) != 2 {
 		t.Errorf("files moved: %v", names)
-	}
-}
-
-func TestStartupStoresContext(t *testing.T) {
-	app := NewApp()
-	ctx := context.Background()
-	app.startup(ctx)
-	if app.ctx != ctx {
-		t.Error("startup should keep the context for runtime calls")
 	}
 }
 

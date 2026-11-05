@@ -14,6 +14,7 @@
 package rename
 
 import (
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -136,38 +137,43 @@ func SplitName(name string) (string, string) {
 }
 
 // letters converts a number to a letter sequence: 1 -> a, 26 -> z, 27 -> aa.
-func letters(n int64, letterCase LetterCase) string {
-	x := n
-	if x < 1 {
-		x = 1
+func letters(n *big.Int, letterCase LetterCase) string {
+	x := new(big.Int).Set(n)
+	if x.Sign() <= 0 {
+		x.SetInt64(1)
 	}
 	var digits []byte
-	for x > 0 {
-		x--
-		digits = append([]byte{byte(x % 26)}, digits...)
-		x /= 26
+	var remainder big.Int
+	for x.Sign() > 0 {
+		x.Sub(x, big.NewInt(1))
+		x.QuoRem(x, big.NewInt(26), &remainder)
+		digits = append(digits, byte(remainder.Int64()))
 	}
 	base := byte('a')
 	if letterCase == LetterUpper {
 		base = 'A'
 	}
 	var b strings.Builder
-	for _, d := range digits {
-		b.WriteByte(base + d)
+	for i := len(digits) - 1; i >= 0; i-- {
+		b.WriteByte(base + digits[i])
 	}
 	return b.String()
 }
 
 // Serial formats the serial for file index (0-based position in the list).
 func Serial(r *PatternRule, index int) string {
-	value := r.Start + r.Step*int64(index)
+	value := new(big.Int).Mul(big.NewInt(r.Step), big.NewInt(int64(index)))
+	value.Add(value, big.NewInt(r.Start))
 	if r.Letters {
 		return letters(value, r.LetterCase)
 	}
-	s := strconv.FormatInt(value, 10)
-	if r.Pad && len(s) < r.Width {
-		zeros := strings.Repeat("0", r.Width-len(s))
-		if value < 0 {
+	s := value.String()
+	// The UI specifies at most 16 digits. Enforce that limit here too,
+	// so manually entered values cannot cause an unbounded allocation.
+	width := min(r.Width, 16)
+	if r.Pad && len(s) < width {
+		zeros := strings.Repeat("0", width-len(s))
+		if value.Sign() < 0 {
 			return "-" + zeros + s[1:]
 		}
 		return zeros + s
@@ -217,11 +223,14 @@ func insertAtChars(s string, pos int, text string) string {
 // deleteRangeChars deletes count characters starting at 1-based position
 // start of s.
 func deleteRangeChars(s string, start, count int) string {
+	if count <= 0 {
+		return s
+	}
 	if start < 1 {
 		start = 1
 	}
 	from := charOffset(s, start-1)
-	to := charOffset(s, start-1+count)
+	to := from + charOffset(s[from:], count)
 	return s[:from] + s[to:]
 }
 

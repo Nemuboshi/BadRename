@@ -1,8 +1,7 @@
 # RenameLite
 
 A small batch rename tool. Add files, pick a rule, see every new name
-before anything touches the disk. Built with Go and Wails; the front end
-is plain HTML, CSS, and JavaScript embedded in the binary.
+before anything touches the disk. Built with Go and MyGo native UI.
 
 ## Rules
 
@@ -19,26 +18,40 @@ Four rule pages, one active at a time:
   group references work in the replacement. The expression is checked
   as you type.
 
+Start and step accept signed 64-bit integers; serial calculations remain exact
+even when a later number exceeds that range. Delete counts must be non-negative.
+The application blocks renaming and shows a message for invalid values.
+
 Every page can lowercase or uppercase the name, the extension, or both.
 On a name conflict you choose: ask, overwrite, skip, or auto-rename
 (appends `(2)`, `(3)`, ...).
 
 ## Build
 
-Requires Go, Node (the front end is TypeScript, compiled in place by
-`tsc` — no bundler, no runtime dependencies), and the Wails CLI:
+Requires Go 1.27.1 or later. The MyGo runtime and CLI are pinned together
+in `go.mod` at `v0.5.6-0.20261017195139-b7f6946547d9`. The native UI
+does not require Node.js or a webview.
 
-```
-go install github.com/wailsapp/wails/v2/cmd/wails@latest
-wails build
+```powershell
+go test ./...
+go tool mygo vet .
+go build -trimpath -tags mygo_noinspector -ldflags="-s -w -H=windowsgui -X github.com/egoist/mygo.production=1 -X github.com/egoist/mygo.packageName=RenameLite -X github.com/egoist/mygo.packageVersion=0.1.0 -X github.com/egoist/mygo.packageIdentifier=com.renamelite.app" -o dist/windows-amd64/RenameLite.exe .
 ```
 
-`wails build` runs `npm ci` and `tsc` through the hooks in
-`wails.json`. The binary lands in `build/bin/renamelite(.exe)`. Platform
-notes: Wails builds natively per platform (WebView2 on Windows,
-WebKitGTK on Linux, Cocoa/WebKit on macOS), so each target is built on
-its own OS. The window sizes itself to its content at startup, so the
-layout adapts to each platform's font metrics.
+The Windows build produces one standalone executable; no installer is needed.
+The release workflow also produces individual Linux and macOS executables.
+Linux requires GTK 3, Windows requires Windows 10 or 11, and macOS requires
+macOS 12 or later. Linux and macOS downloads may need `chmod +x` before use.
+The macOS executable is unsigned; distribution to other Macs requires an
+appropriate signature and notarization.
+
+Windows icon and DPI manifest resources are checked in as
+`rsrc_windows_amd64.syso`. After changing the icon or
+`build/windows/renamelite.exe.manifest`, regenerate them with:
+
+```sh
+go run github.com/akavel/rsrc@v0.10.2 -arch amd64 -ico build/windows/icon.ico -manifest build/windows/renamelite.exe.manifest -o rsrc_windows_amd64.syso
+```
 
 ## License
 

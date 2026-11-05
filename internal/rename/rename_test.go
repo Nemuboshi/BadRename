@@ -1,6 +1,7 @@
 package rename
 
 import (
+	"math"
 	"regexp"
 	"testing"
 )
@@ -290,6 +291,62 @@ func TestPositionsBelowOneClamp(t *testing.T) {
 	// Insert before char 1, then delete char 1: the inserted X goes again.
 	if got := Apply(r, "abc.txt", 0); got != "abc.txt" {
 		t.Errorf("got %q", got)
+	}
+}
+
+func TestSerialExtremeArithmetic(t *testing.T) {
+	cases := []struct {
+		name  string
+		rule  PatternRule
+		index int
+		want  string
+	}{
+		{"addition overflow", PatternRule{Start: math.MaxInt64, Step: 1}, 1, "9223372036854775808"},
+		{"negative overflow", PatternRule{Start: math.MinInt64, Step: -1}, 1, "-9223372036854775809"},
+		{"multiplication overflow and cancellation", PatternRule{Start: math.MinInt64, Step: math.MaxInt64}, 2, "9223372036854775806"},
+		{"negative index", PatternRule{Start: 2, Step: math.MaxInt64}, -2, "-18446744073709551612"},
+		{"negative padding", PatternRule{Start: -5, Pad: true, Width: 5}, 0, "-0005"},
+		{"letters overflow", PatternRule{Start: math.MaxInt64, Step: 1, Letters: true}, 1, "crpxnlskvljfhh"},
+		{"uppercase letters overflow", PatternRule{Start: math.MaxInt64, Step: 1, Letters: true, LetterCase: LetterUpper}, 1, "CRPXNLSKVLJFHH"},
+		{"negative letters after overflow", PatternRule{Start: math.MinInt64, Step: -1, Letters: true}, 1, "a"},
+		{"zero letters", PatternRule{Start: 1, Step: -1, Letters: true}, 1, "a"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := Serial(&tc.rule, tc.index); got != tc.want {
+				t.Errorf("Serial() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDeleteRangeExtremeCounts(t *testing.T) {
+	cases := []struct {
+		name         string
+		start, count int
+		want         string
+	}{
+		{"zero count", 2, 0, "文😀件abc"},
+		{"negative count", 2, -1, "文😀件abc"},
+		{"minimum count", 2, math.MinInt, "文😀件abc"},
+		{"unicode range", 2, 2, "文abc"},
+		{"maximum count", 3, math.MaxInt, "文😀"},
+		{"maximum start", math.MaxInt, math.MaxInt, "文😀件abc"},
+		{"minimum start", math.MinInt, 2, "件abc"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := deleteRangeChars("文😀件abc", tc.start, tc.count); got != tc.want {
+				t.Errorf("deleteRangeChars() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestSerialCapsPaddingWidth(t *testing.T) {
+	r := PatternRule{Start: 7, Width: 1_000_000_000, Pad: true}
+	if got := Serial(&r, 0); got != "0000000000000007" {
+		t.Fatalf("got %q, want sixteen digits", got)
 	}
 }
 

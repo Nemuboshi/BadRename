@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"renamelite/internal/rename"
 )
@@ -19,58 +16,55 @@ type FileRow struct {
 	Result string
 }
 
-// FormState mirrors every rule page's fields. The frontend sends the whole
-// form on each change. Field names match the JSON keys the frontend uses.
+// FormState holds the settings from all rule pages.
 type FormState struct {
-	Tab string `json:"tab"`
+	Tab string
 	// Whole page.
-	Pattern     string `json:"pattern"`
-	Start       int64  `json:"start"`
-	Step        int64  `json:"step"`
-	Width       int    `json:"width"`
-	Pad         bool   `json:"pad"`
-	Letters     bool   `json:"letters"`
-	LetterUpper bool   `json:"letterUpper"`
-	ChangeExt   bool   `json:"changeExt"`
-	Extension   string `json:"extension"`
-	AutoResolve bool   `json:"autoResolve"`
+	Pattern     string
+	Start       int64
+	Step        int64
+	Width       int
+	Pad         bool
+	Letters     bool
+	LetterUpper bool
+	ChangeExt   bool
+	Extension   string
+	AutoResolve bool
 	// The case option is shared by all pages, like the original tool.
-	NameCase int `json:"nameCase"`
+	NameCase int
 	// Replace page.
-	From string `json:"from"`
-	To   string `json:"to"`
+	From string
+	To   string
 	// Add/Delete page. InsertAt and DeleteRange enable the two optional
 	// character-position operations; they have nothing to do with the
 	// file extension.
-	Prefix      string `json:"prefix"`
-	Suffix      string `json:"suffix"`
-	InsertAt    bool   `json:"insertAt"`
-	InsertPos   int    `json:"insertPos"`
-	InsertText  string `json:"insertText"`
-	DeleteText  string `json:"deleteText"`
-	DeleteRange bool   `json:"deleteRange"`
-	DeleteStart int    `json:"deleteStart"`
-	DeleteCount int    `json:"deleteCount"`
+	Prefix      string
+	Suffix      string
+	InsertAt    bool
+	InsertPos   int
+	InsertText  string
+	DeleteText  string
+	DeleteRange bool
+	DeleteStart int
+	DeleteCount int
 }
 
 // RowView is one rendered line of the file table.
 type RowView struct {
-	Old     string `json:"old"`
-	Preview string `json:"preview"`
-	Result  string `json:"result"`
+	Old     string
+	Preview string
+	Result  string
 }
 
 // RunResult reports what a rename pass did. When Conflict is set, the pass
 // stopped and waits for ResolveConflict.
 type RunResult struct {
-	Summary  string `json:"summary"`
-	Conflict string `json:"conflict,omitempty"`
+	Summary  string
+	Conflict string
 }
 
 // App holds the GUI state. The bound methods are called from JavaScript.
 type App struct {
-	ctx context.Context
-
 	files         []FileRow
 	form          FormState
 	applyAll      rename.ConflictPolicy
@@ -85,10 +79,6 @@ type App struct {
 // NewApp creates the application state.
 func NewApp() *App {
 	return &App{conflictIdx: -1}
-}
-
-func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
 }
 
 // rule builds the active rule from the form state. An invalid regex makes
@@ -181,17 +171,6 @@ func (a *App) RegexError(expr string) string {
 		return err.Error()
 	}
 	return ""
-}
-
-// AddFiles opens the file dialog and adds the picked files.
-func (a *App) AddFiles() (int, error) {
-	paths, err := runtime.OpenMultipleFilesDialog(a.ctx, runtime.OpenDialogOptions{
-		Title: "RenameLite - Select Files",
-	})
-	if err != nil {
-		return 0, err
-	}
-	return a.AddPaths(paths), nil
 }
 
 // AddPaths adds dropped or picked file paths to the list. It returns the
@@ -361,9 +340,4 @@ func (a *App) ResolveConflict(policy string, all bool) RunResult {
 		a.renameAuto(i, a.conflictTgt)
 	}
 	return a.run(i + 1)
-}
-
-// Quit closes the window.
-func (a *App) Quit() {
-	runtime.Quit(a.ctx)
 }

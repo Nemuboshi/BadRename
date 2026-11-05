@@ -8,18 +8,12 @@ CLAUDE.md
 # Go build output.
 build/bin/
 
-# Generated Wails JS bindings.
-frontend/wailsjs/
+# Local backup of the pre-migration frontend.
+legacy-*-frontend/
 
-# Compiled from frontend/ts by tsc during wails build.
-frontend/src/main.js
-
-# npm dependencies for the tsc build.
-frontend/node_modules/
+# MyGo release output.
+dist/
 
 # Editor files.
 .vscode/
 .idea/
-
-# Wails npm-install cache marker.
-frontend/package.json.md5
