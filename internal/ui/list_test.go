@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"badrename/internal/app"
 	"testing"
 
 	"github.com/egoist/mygo/ui"
@@ -8,7 +9,7 @@ import (
 
 func TestNativeTableResizePreservesPreviewWidth(t *testing.T) {
 	panel := newListPanel()
-	rows := []RowView{{Old: "original.txt", Preview: "preview.txt", Result: "OK"}}
+	rows := []app.RowView{{Old: "original.txt", Preview: "preview.txt", Result: "OK"}}
 	tt := ui.NewTester(func(c *ui.Context) { panel.view(c, rows, nil, nil, nil, nil) }, 520, 420)
 	tt.Frame()
 	preview, ok := tt.Find("Preview")

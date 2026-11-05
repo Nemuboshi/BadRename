@@ -24,7 +24,14 @@ The application blocks renaming and shows a message for invalid values.
 
 Every page can lowercase or uppercase the name, the extension, or both.
 On a name conflict you choose: ask, overwrite, skip, or auto-rename
-(appends `(2)`, `(3)`, ...).
+(appends `(2)`, `(3)`, ...). Generated names must be single file names, not
+paths. Existing directory entries, including dangling symbolic links, count as
+conflicts. Unless you explicitly choose overwrite, the application creates the
+new name without replacing an existing entry. This uses hard links: on file
+systems or with file types that do not support them, the rename fails safely
+rather than falling back to a potentially destructive overwrite. If creating
+the new name succeeds but removing the old one fails, both names are retained
+and the operation is reported as failed.
 
 ## Build
 
@@ -34,7 +41,7 @@ does not require Node.js or a webview.
 
 ```powershell
 go test ./...
-go tool mygo vet .
+go tool mygo vet ./internal/ui
 go build -trimpath -tags mygo_noinspector -ldflags="-s -w -H=windowsgui -X github.com/egoist/mygo.production=1 -X github.com/egoist/mygo.packageName=BadRename -X github.com/egoist/mygo.packageVersion=0.1.0 -X github.com/egoist/mygo.packageIdentifier=com.badrename.app" -o dist/windows-amd64/BadRename.exe .
 ```
 
@@ -46,11 +53,11 @@ The macOS executable is unsigned; distribution to other Macs requires an
 appropriate signature and notarization.
 
 Windows icon and DPI manifest resources are checked in as
-`rsrc_windows_amd64.syso`. After changing the icon or
+`internal/winres/rsrc_windows_amd64.syso`. After changing the icon or
 `build/windows/badrename.exe.manifest`, regenerate them with:
 
 ```sh
-go run github.com/akavel/rsrc@v0.10.2 -arch amd64 -ico build/windows/icon.ico -manifest build/windows/badrename.exe.manifest -o rsrc_windows_amd64.syso
+go run github.com/akavel/rsrc@v0.10.2 -arch amd64 -ico build/windows/icon.ico -manifest build/windows/badrename.exe.manifest -o internal/winres/rsrc_windows_amd64.syso
 ```
 
 ## License

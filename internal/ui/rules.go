@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"badrename/internal/app"
 	"errors"
 	"math"
 	"math/big"
@@ -16,6 +17,7 @@ import (
 type rulePanel struct {
 	numberText                                        map[string]*string
 	numberErrors                                      map[string]bool
+	numberInvalid                                     map[string]bool
 	inputHandles                                      map[string]*ui.Handle
 	tab                                               int
 	pattern                                           string
@@ -41,34 +43,34 @@ func newRulePanel() *rulePanel {
 }
 
 // parseNumber keeps decimal integers exact while preserving truncation of fractional input.
-func parseNumber(text string) (int64, bool) {
+func parseNumber(text string) (int64, bool, bool) {
 	text = strings.TrimSpace(text)
 	n, err := strconv.ParseInt(text, 10, 64)
 	if err == nil {
-		return n, false
+		return n, false, false
 	}
 	if errors.Is(err, strconv.ErrRange) {
-		return 0, true
+		return 0, true, false
 	}
 	f, err := strconv.ParseFloat(text, 64)
 	if errors.Is(err, strconv.ErrRange) {
-		return 0, true
+		return 0, true, false
 	}
 	if err != nil || math.IsNaN(f) || math.IsInf(f, 0) {
-		return 0, false
+		return 0, false, true
 	}
 	if f == 0 {
-		return 0, false
+		return 0, false, false
 	}
 	r, ok := new(big.Rat).SetString(text)
 	if !ok {
-		return 0, false
+		return 0, false, true
 	}
 	integer := new(big.Int).Quo(r.Num(), r.Denom())
 	if !integer.IsInt64() {
-		return 0, true
+		return 0, true, false
 	}
-	return integer.Int64(), false
+	return integer.Int64(), false, false
 }
 
 func safeInt(n int64) int {
@@ -99,6 +101,11 @@ func (p *rulePanel) negativeDeleteCount() bool {
 
 func (p *rulePanel) validationError() string {
 	if p.tab == 0 {
+		for _, key := range []string{"start", "step", "width"} {
+			if p.numberInvalid[key] {
+				return "Enter a valid number."
+			}
+		}
 		if p.numberErrors["start"] {
 			return "Start at is outside the supported integer range."
 		}
@@ -110,6 +117,9 @@ func (p *rulePanel) validationError() string {
 		}
 	}
 	if p.tab == 2 {
+		if (p.insertAt && p.numberInvalid["insert-pos"]) || (p.deleteRange && (p.numberInvalid["delete-start"] || p.numberInvalid["delete-count"])) {
+			return "Enter a valid number."
+		}
 		if p.insertAt && p.numberErrors["insert-pos"] {
 			return "Insert position is outside the supported integer range."
 		}
@@ -129,7 +139,7 @@ func (p *rulePanel) validationError() string {
 }
 
 // form collects the active rule and the shared case option.
-func (p *rulePanel) form() FormState {
+func (p *rulePanel) form() app.FormState {
 	tabs := [...]string{"whole", "replace", "adddelete", "regex"}
 	tab := p.tab
 	if tab < 0 || tab >= len(tabs) {
@@ -139,7 +149,7 @@ func (p *rulePanel) form() FormState {
 	if tab == 3 {
 		from, to = p.regexFrom, p.regexTo
 	}
-	return FormState{
+	return app.FormState{
 		Tab: tabs[tab], Pattern: p.pattern, Start: p.start,
 		Step: p.step, Width: max(1, safeInt(p.width)),
 		Pad: p.pad, Letters: p.letters, LetterUpper: p.letterUpper,
@@ -344,7 +354,7 @@ func (p *rulePanel) numberInput(c *ui.Context, label, key string, value *int64, 
 		p.numberText[key] = text
 	}
 	adjust := func(delta int64) {
-		if p.numberErrors[key] {
+		if p.numberErrors[key] || p.numberInvalid[key] {
 			return
 		}
 		if delta > 0 && *value < hi {
@@ -359,12 +369,14 @@ func (p *rulePanel) numberInput(c *ui.Context, label, key string, value *int64, 
 		Background(ui.RGB(255, 255, 255)).Border(1, ui.RGB(197, 197, 197)).Radius(3).Children(func() {
 		input := ui.TextInput(c.Key(key), text).Bind(p.inputHandle(key)).Label(label).Grow(1).MinWidth(0).Padding(4, 3).Background(ui.RGB(255, 255, 255)).Border(0, ui.Color{}).FontSize(13)
 		if input.Changed() {
-			n, outOfRange := parseNumber(*text)
+			n, outOfRange, invalid := parseNumber(*text)
 			if p.numberErrors == nil {
 				p.numberErrors = make(map[string]bool)
+				p.numberInvalid = make(map[string]bool)
 			}
 			p.numberErrors[key] = outOfRange || (strconv.IntSize == 32 && key != "start" && key != "step" && (n < math.MinInt32 || n > math.MaxInt32))
-			if !p.numberErrors[key] {
+			p.numberInvalid[key] = invalid
+			if !p.numberErrors[key] && !invalid {
 				*value = n
 			}
 		}

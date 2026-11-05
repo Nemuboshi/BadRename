@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"badrename/internal/app"
 	"fmt"
 
 	"github.com/egoist/mygo"
@@ -11,11 +12,11 @@ type desktop struct {
 	window                                        *mygo.Window
 	post                                          func(func())
 	openFiles                                     func() ([]string, error)
-	app                                           *App
+	app                                           *app.App
 	rules                                         *rulePanel
 	list                                          *listPanel
-	rows                                          []RowView
-	lastForm                                      FormState
+	rows                                          []app.RowView
+	lastForm                                      app.FormState
 	lastError                                     string
 	busy                                          bool
 	conflictOpen, summaryOpen, helpOpen, applyAll bool
@@ -23,7 +24,7 @@ type desktop struct {
 }
 
 func newDesktop() *desktop {
-	d := &desktop{app: NewApp(), rules: newRulePanel(), list: newListPanel()}
+	d := &desktop{app: app.NewApp(), rules: newRulePanel(), list: newListPanel()}
 	d.refresh()
 	return d
 }
@@ -79,7 +80,7 @@ func (d *desktop) runRename(policy string) {
 	all := d.applyAll
 	post := d.post
 	go func() {
-		var result RunResult
+		var result app.RunResult
 		if policy == "" {
 			result = d.app.StartRename()
 		} else {

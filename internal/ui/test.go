@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"badrename/internal/app"
 	"errors"
 	"os"
 	"path/filepath"
@@ -465,7 +466,7 @@ func TestNativeBusyListDoesNotChangeSelection(t *testing.T) {
 	panel := newListPanel()
 	panel.selected = 0
 	panel.busy = true
-	rows := []RowView{{Old: "a"}, {Old: "b"}}
+	rows := []app.RowView{{Old: "a"}, {Old: "b"}}
 	called := false
 	tt := ui.NewTester(func(c *ui.Context) {
 		panel.view(c, rows, nil, nil, func() { called = true }, func(int) { called = true })

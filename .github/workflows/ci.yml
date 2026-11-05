@@ -29,6 +29,6 @@ jobs:
       - name: go vet
         run: go vet ./...
       - name: MyGo vet
-        run: go tool mygo vet .
+        run: go tool mygo vet ./internal/ui
       - name: go test
         run: go test ./...

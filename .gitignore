@@ -4,6 +4,7 @@ _extracted/
 _analysis/
 docs/analysis.md
 CLAUDE.md
+/wsl.md
 
 # Go build output.
 build/bin/

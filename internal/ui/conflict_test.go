@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"badrename/internal/app"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,15 +17,15 @@ func TestNativeConflictActions(t *testing.T) {
 		name, action                  string
 		all                           bool
 		files                         map[string]string
-		rows                          []RowView
+		rows                          []app.RowView
 		processed, renamed, unchanged int
 	}{
-		{"overwrite", "Overwrite", false, map[string]string{"photo_1.txt": "first", "photo_2.txt": "second", "photo_3.txt": "third"}, []RowView{{"photo_1.txt", "photo_1.txt", "OK"}, {"photo_2.txt", "photo_2.txt", "OK"}, {"photo_3.txt", "photo_3.txt", "OK"}}, 3, 3, 0},
-		{"auto rename", "Auto Rename", false, map[string]string{"photo_1.txt": "first", "photo_2.txt": "existing2", "photo_3.txt": "existing3", "photo_2 (2).txt": "second", "photo_3 (2).txt": "third"}, []RowView{{"photo_1.txt", "photo_1.txt", "OK"}, {"photo_2 (2).txt", "photo_2.txt", "OK"}, {"photo_3 (2).txt", "photo_3.txt", "OK"}}, 3, 3, 0},
-		{"overwrite all", "Overwrite", true, map[string]string{"photo_1.txt": "first", "photo_2.txt": "second", "photo_3.txt": "third"}, []RowView{{"photo_1.txt", "photo_1.txt", "OK"}, {"photo_2.txt", "photo_2.txt", "OK"}, {"photo_3.txt", "photo_3.txt", "OK"}}, 3, 3, 0},
-		{"auto rename all", "Auto Rename", true, map[string]string{"photo_1.txt": "first", "photo_2.txt": "existing2", "photo_3.txt": "existing3", "photo_2 (2).txt": "second", "photo_3 (2).txt": "third"}, []RowView{{"photo_1.txt", "photo_1.txt", "OK"}, {"photo_2 (2).txt", "photo_2.txt", "OK"}, {"photo_3 (2).txt", "photo_3.txt", "OK"}}, 3, 3, 0},
-		{"skip all", "Skip", true, map[string]string{"photo_1.txt": "first", "second.txt": "second", "third.txt": "third", "photo_2.txt": "existing2", "photo_3.txt": "existing3"}, []RowView{{"photo_1.txt", "photo_1.txt", "OK"}, {"second.txt", "photo_2.txt", "Skipped"}, {"third.txt", "photo_3.txt", "Skipped"}}, 3, 1, 2},
-		{"cancel", "Cancel", false, map[string]string{"photo_1.txt": "first", "second.txt": "second", "third.txt": "third", "photo_2.txt": "existing2", "photo_3.txt": "existing3"}, []RowView{{"photo_1.txt", "photo_1.txt", "OK"}, {"second.txt", "photo_2.txt", ""}, {"third.txt", "photo_3.txt", ""}}, 2, 1, 0},
+		{"overwrite", "Overwrite", false, map[string]string{"photo_1.txt": "first", "photo_2.txt": "second", "photo_3.txt": "third"}, []app.RowView{{Old: "photo_1.txt", Preview: "photo_1.txt", Result: "OK"}, {Old: "photo_2.txt", Preview: "photo_2.txt", Result: "OK"}, {Old: "photo_3.txt", Preview: "photo_3.txt", Result: "OK"}}, 3, 3, 0},
+		{"auto rename", "Auto Rename", false, map[string]string{"photo_1.txt": "first", "photo_2.txt": "existing2", "photo_3.txt": "existing3", "photo_2 (2).txt": "second", "photo_3 (2).txt": "third"}, []app.RowView{{Old: "photo_1.txt", Preview: "photo_1.txt", Result: "OK"}, {Old: "photo_2 (2).txt", Preview: "photo_2.txt", Result: "OK"}, {Old: "photo_3 (2).txt", Preview: "photo_3.txt", Result: "OK"}}, 3, 3, 0},
+		{"overwrite all", "Overwrite", true, map[string]string{"photo_1.txt": "first", "photo_2.txt": "second", "photo_3.txt": "third"}, []app.RowView{{Old: "photo_1.txt", Preview: "photo_1.txt", Result: "OK"}, {Old: "photo_2.txt", Preview: "photo_2.txt", Result: "OK"}, {Old: "photo_3.txt", Preview: "photo_3.txt", Result: "OK"}}, 3, 3, 0},
+		{"auto rename all", "Auto Rename", true, map[string]string{"photo_1.txt": "first", "photo_2.txt": "existing2", "photo_3.txt": "existing3", "photo_2 (2).txt": "second", "photo_3 (2).txt": "third"}, []app.RowView{{Old: "photo_1.txt", Preview: "photo_1.txt", Result: "OK"}, {Old: "photo_2 (2).txt", Preview: "photo_2.txt", Result: "OK"}, {Old: "photo_3 (2).txt", Preview: "photo_3.txt", Result: "OK"}}, 3, 3, 0},
+		{"skip all", "Skip", true, map[string]string{"photo_1.txt": "first", "second.txt": "second", "third.txt": "third", "photo_2.txt": "existing2", "photo_3.txt": "existing3"}, []app.RowView{{Old: "photo_1.txt", Preview: "photo_1.txt", Result: "OK"}, {Old: "second.txt", Preview: "photo_2.txt", Result: "Skipped"}, {Old: "third.txt", Preview: "photo_3.txt", Result: "Skipped"}}, 3, 1, 2},
+		{"cancel", "Cancel", false, map[string]string{"photo_1.txt": "first", "second.txt": "second", "third.txt": "third", "photo_2.txt": "existing2", "photo_3.txt": "existing3"}, []app.RowView{{Old: "photo_1.txt", Preview: "photo_1.txt", Result: "OK"}, {Old: "second.txt", Preview: "photo_2.txt", Result: ""}, {Old: "third.txt", Preview: "photo_3.txt", Result: ""}}, 2, 1, 0},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

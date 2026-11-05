@@ -262,8 +262,7 @@ func Apply(rule Rule, name string, index int) string {
 			return name
 		}
 		stem, ext := SplitName(name)
-		out := strings.ReplaceAll(r.Pattern, "*", stem)
-		out = strings.ReplaceAll(out, "#", Serial(&r, index))
+		out := strings.NewReplacer("*", stem, "#", Serial(&r, index)).Replace(r.Pattern)
 		if r.HasExt {
 			ext = strings.TrimLeft(r.Extension, ".")
 		}

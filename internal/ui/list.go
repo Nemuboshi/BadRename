@@ -1,6 +1,9 @@
-package main
+package ui
 
-import "github.com/egoist/mygo/ui"
+import (
+	"badrename/internal/app"
+	"github.com/egoist/mygo/ui"
+)
 
 // actionButton keeps list and footer actions aligned with the original layout.
 func actionButton(c *ui.Context, label string) ui.Element {
@@ -22,7 +25,7 @@ func newListPanel() *listPanel {
 
 // view builds the file list. Action callbacks run before the panel updates its
 // selection, so the caller can read selected to identify the source row.
-func (p *listPanel) view(c *ui.Context, rows []RowView, onAdd func(), onRemove func(), onRemoveAll func(), onMove func(int)) {
+func (p *listPanel) view(c *ui.Context, rows []app.RowView, onAdd func(), onRemove func(), onRemoveAll func(), onMove func(int)) {
 	if p.selected >= len(rows) {
 		p.selected = len(rows) - 1
 	}
